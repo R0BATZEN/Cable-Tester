@@ -6,7 +6,7 @@
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 
 #define SCREEN_ADDRESS 0x3D ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -26,25 +26,45 @@ const int IN4 = 10; // 2-
 
 const int START_BUTTON = 2;
 
-const int WIGGLE_SWITCH = A6;
-const int NORMAL_SWITCH = A7;
+const int WIGGLE_SWITCH = 11;
+const int NORMAL_SWITCH = 12;
 
 const int MONO_SWITCH = A0;
 //const int SPEAKON_SWITCH = A1;
 const int NL2_SWITCH = A2;
 const int NL4_SWITCH = A1;
 
-const int XLR[4][4] = { {0, 1, 1, 1}, {1, 0, 1, 1}, {1, 1, 0, 1} , {1, 1, 1, 1 } };
-const int MONO[4][4] = { {0, 1, 1, 1}, {1, 0, 0, 1}, {1, 0, 0, 1}, {1, 1, 1, 1} };
-const int NL2[4][4] = { {0, 1, 1, 1}, {1, 0, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1} };
-const int NL4[4][4] = { {0, 1, 1, 1}, {1, 0, 1, 1}, {1, 1, 0, 1}, {1, 1, 1, 0} };
-//const int SPEAKON[4][4] = { {0, 1, 1, 1}, {1, 0, 1, 1}, {1, 1, 0, 1}, {1, 1, 1, 0} };
+const int XLR[4][4] = { {0, 1, 1, 1},
+                        {1, 0, 1, 1},
+                        {1, 1, 0, 1} ,
+                        {1, 1, 1, 1 } };
+
+const int MONO[4][4] = { {0, 1, 1, 1},
+                         {1, 0, 0, 1},
+                         {1, 0, 0, 1},
+                         {1, 1, 1, 1} };
+
+const int NL2[4][4] = { {0, 1, 1, 1},
+                        {1, 0, 1, 1},
+                        {1, 1, 1, 1},
+                        {1, 1, 1, 1} };
+
+const int NL4[4][4] = { {0, 1, 1, 1},
+                        {1, 0, 1, 1},
+                        {1, 1, 0, 1},
+                        {1, 1, 1, 0} };
+
+String openStatus = "Open: T,R,S";
+String shortStatus = "Shrt:TRTSRS";
+char iDent[7] = {'0', '2', '3', '1', 'T', 'R', 'S',};
+int muX = 0;
 
 int operatingMode; // 0 = wiggle, 1 = normal
 int cableType;    // 3 = XLR/Stereo, 2 = Mono, 4 = NL4, 5 = NL2
 
 int inputs[] = { IN1, IN2, IN3, IN4, WIGGLE_SWITCH, NORMAL_SWITCH, MONO_SWITCH, NL4_SWITCH, NL2_SWITCH, START_BUTTON};
 int outputs[] = {OUT1, OUT2, OUT3, OUT4};
+
 
 int pass = 1;
 
@@ -55,12 +75,18 @@ int getOperatingMode() {
 
     int mode = 1;
 
+    //Serial.print("Wiggle: ");
+    //Serial.println(digitalRead(WIGGLE_SWITCH));
+    //Serial.print("Normal: ");
+    //Serial.println(digitalRead(NORMAL_SWITCH));
+
     if (!digitalRead(WIGGLE_SWITCH)) {
         mode = 0;
     } else if (!digitalRead(NORMAL_SWITCH)) {
         mode = 1;
-    } else {
     }
+    //Serial.print("Mode: ");
+    //Serial.println(mode);
     return mode;
 }
 
@@ -80,6 +106,7 @@ int getCableType() {
     }else {   //XLR
         cable = 3;
     }
+
     return cable;
 }
 
@@ -90,9 +117,10 @@ int getCableType() {
 //====================================================================================
 void setup() {
 
-    Serial.begin(9600);
-    Serial.println("Starting System");
-    Serial.println("---------------------");
+    //Serial.begin(9600);
+    //Serial.println("Starting System");
+    //Serial.println("---------------------");
+    //Serial.println("Test");
 
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
     display.clearDisplay();
@@ -118,6 +146,9 @@ void setup() {
 void loop() {
 
     cableType = getCableType();
+
+    //Serial.print("Cable: ");
+    //Serial.println(cableType);
 
     display.clearDisplay();
     display.setTextSize(3);
@@ -152,20 +183,26 @@ void loop() {
 
     if (!digitalRead(START_BUTTON)) {
         startTest();
-        delay(2000);
+        delay(200);
     }
 }
 
 void startTest() {
+
+    //.print("Starting Test, Mode: ");
+    //Serial.println(operatingMode);
+
+    openStatus = "Open: T,R,S";
+    shortStatus = "Shrt:TRTSRS";
+
     if (operatingMode == 0) {
         testWiggle();
     } else if (operatingMode == 1) {
         testNormal();
     }
-    delay(500);
 }
 
-void testNormal() {
+int testNormal() {
 
     int testResults[4][4];
 
@@ -190,20 +227,11 @@ void testNormal() {
     }
 
     //=== hand off results to be processed ======================================
-    int result = checkResults(testResults);
-    Serial.println(result);
-    display.clearDisplay();
-    display.setTextSize(3);
-    display.setCursor(28, 21);
-    if (result) {
-        display.println("PASS");
-    } else {
-        display.println("FAIL");
-    }
-    display.display();
+    int pass = checkResults(testResults);
+    return pass;
 }
 
-void testWiggle() {
+int testWiggle() {
     unsigned long startMillis = millis();
 
     int pass = 1;
@@ -239,17 +267,8 @@ void testWiggle() {
         }
 
         pass = checkResults(testResults);
+        return pass;
     }
-
-    Serial.println(pass);
-    display.clearDisplay();
-    display.setCursor(0, 21);
-    if (pass) {
-        display.println("PASS");
-    } else {
-        display.println("FAIL");
-    }
-    display.display();
 }
 
 int checkResults(int pResults[4][4]) {
@@ -261,9 +280,18 @@ int checkResults(int pResults[4][4]) {
             for (int j = 0; j < 4; j++) {
                 if (pResults[i][j] != MONO[i][j]) {
                     pass = 0;
+                    if (pResults[i][j] > MONO[i][j]) {
+                        openStatus.setCharAt(i + 1 + 5, iDent[i + muX]);
+                    }
                 }
             }
         }
+
+        if (pResults[0][2] == 0 && pResults[2][0] == 0) {
+            shortStatus.setCharAt(7, iDent[muX]);
+            shortStatus.setCharAt(8, iDent[muX + 2]);
+        }
+
     } else  if (cableType == 3) { // XLR/Stereo Cable
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -293,5 +321,36 @@ int checkResults(int pResults[4][4]) {
             }
         }
     }
+
+    //=== hand off results to be processed ======================================
+    //Serial.println(pass);
+    display.clearDisplay();
+    display.setTextSize(3);
+    display.setCursor(28, 21);
+    if (pass) {
+        display.println("PASS");
+        display.display();
+        delay(2000);
+    } else {
+        display.println("FAIL");
+        display.display();
+        delay(1000);
+        showResults();
+    }
     return pass;
+}
+
+void showResults() {
+    display.clearDisplay();
+    display.setTextSize(1.5);
+    display.setCursor(0, 0);
+    display.print(openStatus);
+    display.setCursor(0, 18);
+    display.print(shortStatus);
+    display.display();
+    delay(5000);
+/**
+    display.clearDisplay();
+    display.display();
+    delay(100);**/
 }
