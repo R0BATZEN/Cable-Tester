@@ -30,7 +30,6 @@ const int WIGGLE_SWITCH = 11;
 const int NORMAL_SWITCH = 12;
 
 const int MONO_SWITCH = A0;
-//const int SPEAKON_SWITCH = A1;
 const int NL2_SWITCH = A2;
 const int NL4_SWITCH = A1;
 
@@ -54,10 +53,13 @@ const int NL4[4][4] = { {0, 1, 1, 1},
                         {1, 1, 0, 1},
                         {1, 1, 1, 0} };
 
-String openStatus = "Open: T,R,S";
-String shortStatus = "Shrt:TRTSRS";
-char iDent[7] = {'0', '2', '3', '1', 'T', 'R', 'S',};
-int muX = 0;
+char openStatus[18] = "Open: ";
+//char shortStatus[16];
+
+char XLR_pins[3][2] = { "3", "2", "1" };
+char MONO_pins[3][2] = { "T", "R" "S" };
+char NL2_pins[2][3] = { "+1", "-1" };
+char NL4_pins[4][3] = { "+1", "-1", "+2", "-2" };
 
 int operatingMode; // 0 = wiggle, 1 = normal
 int cableType;    // 3 = XLR/Stereo, 2 = Mono, 4 = NL4, 5 = NL2
@@ -117,7 +119,8 @@ int getCableType() {
 //====================================================================================
 void setup() {
 
-    //Serial.begin(9600);
+    Serial.begin(9600);
+    Serial.println(NL4_pins[0]);
     //Serial.println("Starting System");
     //Serial.println("---------------------");
     //Serial.println("Test");
@@ -191,9 +194,6 @@ void startTest() {
 
     //.print("Starting Test, Mode: ");
     //Serial.println(operatingMode);
-
-    openStatus = "Open: T,R,S";
-    shortStatus = "Shrt:TRTSRS";
 
     if (operatingMode == 0) {
         testWiggle();
@@ -281,22 +281,25 @@ int checkResults(int pResults[4][4]) {
                 if (pResults[i][j] != MONO[i][j]) {
                     pass = 0;
                     if (pResults[i][j] > MONO[i][j]) {
-                        openStatus.setCharAt(i + 1 + 5, iDent[i + muX]);
+                        //strcat(openStatus, MONO_pins[i]);
                     }
                 }
             }
         }
 
-        if (pResults[0][2] == 0 && pResults[2][0] == 0) {
+        /**if (pResults[0][2] == 0 && pResults[2][0] == 0) {
             shortStatus.setCharAt(7, iDent[muX]);
             shortStatus.setCharAt(8, iDent[muX + 2]);
-        }
+        }**/
 
     } else  if (cableType == 3) { // XLR/Stereo Cable
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (pResults[i][j] != XLR[i][j]) {
                     pass = 0;
+                    if (pResults[i][j] > MONO[i][j]) {
+                        //strcat(openStatus, XLR_pins[i]);
+                    }
                 }
             }
         }
@@ -309,6 +312,12 @@ int checkResults(int pResults[4][4]) {
             for (int j = 0; j < 4; j++) {
                 if (pResults[i][j] != NL4[i][j]) {
                     pass = 0;
+                    if (pResults[i][j] > NL4[i][j]) {
+                        if(strchr(openStatus, NL4_pins[i]))
+                            strcat(openStatus, NL4_pins[i]);
+                            Serial.println(NL4_pins[i]);
+                            Serial.println(openStatus);
+                    }
                 }
             }
         }
@@ -317,6 +326,9 @@ int checkResults(int pResults[4][4]) {
             for (int j = 0; j < 4; j++) {
                 if (pResults[i][j] != NL2[i][j]) {
                     pass = 0;
+                    if (pResults[i][j] > MONO[i][j]) {
+                        strcat(openStatus, NL2_pins[i]);
+                    }
                 }
             }
         }
@@ -342,11 +354,11 @@ int checkResults(int pResults[4][4]) {
 
 void showResults() {
     display.clearDisplay();
-    display.setTextSize(1.5);
+    display.setTextSize(2);
     display.setCursor(0, 0);
     display.print(openStatus);
     display.setCursor(0, 18);
-    display.print(shortStatus);
+    //display.print(shortStatus);
     display.display();
     delay(5000);
 /**
