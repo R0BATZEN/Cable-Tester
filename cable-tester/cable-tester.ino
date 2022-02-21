@@ -6,13 +6,13 @@
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
-#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 
 #define SCREEN_ADDRESS 0x3D ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 const long interval = 10000;           // interval at which to test wiggle mode (milliseconds)
-unsigned long previousMillis = 0;      // will store last time LED was updated
+unsigned long previousMillis = 0;
 
 const int OUT1 = 6; // TIP / 2 / 1+
 const int OUT2 = 5; // RING / 3 / 1-
@@ -53,9 +53,6 @@ const int NL4[4][4] = { {0, 1, 1, 1},
                         {1, 1, 0, 1},
                         {1, 1, 1, 0} };
 
-char openStatus[18] = "Open: ";
-//char shortStatus[16];
-
 char XLR_pins[3][2] = { "3", "2", "1" };
 char MONO_pins[3][2] = { "T", "R" "S" };
 char NL2_pins[2][3] = { "+1", "-1" };
@@ -66,7 +63,6 @@ int cableType;    // 3 = XLR/Stereo, 2 = Mono, 4 = NL4, 5 = NL2
 
 int inputs[] = { IN1, IN2, IN3, IN4, WIGGLE_SWITCH, NORMAL_SWITCH, MONO_SWITCH, NL4_SWITCH, NL2_SWITCH, START_BUTTON};
 int outputs[] = {OUT1, OUT2, OUT3, OUT4};
-
 
 int pass = 1;
 
@@ -120,7 +116,6 @@ int getCableType() {
 void setup() {
 
     Serial.begin(9600);
-    Serial.println(NL4_pins[0]);
     //Serial.println("Starting System");
     //Serial.println("---------------------");
     //Serial.println("Test");
@@ -192,8 +187,10 @@ void loop() {
 
 void startTest() {
 
-    //.print("Starting Test, Mode: ");
+    //Serial.print("Starting Test, Mode: ");
     //Serial.println(operatingMode);
+
+    cableType = getCableType();
 
     if (operatingMode == 0) {
         testWiggle();
@@ -227,7 +224,7 @@ int testNormal() {
     }
 
     //=== hand off results to be processed ======================================
-    int pass = checkResults(testResults);
+    int pass = checkResults(testResults, 1);
     return pass;
 }
 
@@ -237,14 +234,17 @@ int testWiggle() {
     int pass = 1;
 
     display.clearDisplay();
-    display.setCursor(0, 15);
+    display.setCursor(10, 15);
     display.setTextSize(3);
     display.println("WIGGLE");
+    display.setCursor(22, 40);
+    display.setTextSize(2);
+    display.println("for 10s");
     display.display();
 
-    while (millis() - startMillis < interval && pass == 1) {
+    int testResults[4][4];
 
-        int testResults[4][4];
+    while (millis() - startMillis < interval && pass == 1) {
 
         //=== set all outputs to high to prepare testing ============================
         for (int x = 0; x < 4; x++) {
@@ -266,40 +266,29 @@ int testWiggle() {
             digitalWrite(outputs[x], LOW);
         }
 
-        pass = checkResults(testResults);
-        return pass;
+        pass = checkResults(testResults, 0);
     }
+    checkResults(testResults, 1);
+    return pass;
 }
 
-int checkResults(int pResults[4][4]) {
+int checkResults(int pResults[4][4], int print) {
     pass = 1;
-    cableType = getCableType();
 
     if (cableType == 2) { // Mono Cable
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (pResults[i][j] != MONO[i][j]) {
                     pass = 0;
-                    if (pResults[i][j] > MONO[i][j]) {
-                        //strcat(openStatus, MONO_pins[i]);
-                    }
                 }
             }
         }
-
-        /**if (pResults[0][2] == 0 && pResults[2][0] == 0) {
-            shortStatus.setCharAt(7, iDent[muX]);
-            shortStatus.setCharAt(8, iDent[muX + 2]);
-        }**/
 
     } else  if (cableType == 3) { // XLR/Stereo Cable
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (pResults[i][j] != XLR[i][j]) {
                     pass = 0;
-                    if (pResults[i][j] > MONO[i][j]) {
-                        //strcat(openStatus, XLR_pins[i]);
-                    }
                 }
             }
         }
@@ -312,12 +301,6 @@ int checkResults(int pResults[4][4]) {
             for (int j = 0; j < 4; j++) {
                 if (pResults[i][j] != NL4[i][j]) {
                     pass = 0;
-                    if (pResults[i][j] > NL4[i][j]) {
-                        if(strchr(openStatus, NL4_pins[i]))
-                            strcat(openStatus, NL4_pins[i]);
-                            Serial.println(NL4_pins[i]);
-                            Serial.println(openStatus);
-                    }
                 }
             }
         }
@@ -326,43 +309,81 @@ int checkResults(int pResults[4][4]) {
             for (int j = 0; j < 4; j++) {
                 if (pResults[i][j] != NL2[i][j]) {
                     pass = 0;
-                    if (pResults[i][j] > MONO[i][j]) {
-                        strcat(openStatus, NL2_pins[i]);
-                    }
                 }
             }
         }
     }
 
     //=== hand off results to be processed ======================================
-    //Serial.println(pass);
-    display.clearDisplay();
-    display.setTextSize(3);
-    display.setCursor(28, 21);
-    if (pass) {
-        display.println("PASS");
-        display.display();
-        delay(2000);
-    } else {
-        display.println("FAIL");
-        display.display();
-        delay(1000);
-        showResults();
+    if(print) {
+        //Serial.println(pass);
+        display.clearDisplay();
+        display.setTextSize(3);
+        display.setCursor(28, 21);
+        if (pass) {
+            display.println("PASS");
+            display.display();
+            delay(2000);
+            showResults(pResults);
+        } else {
+            display.println("FAIL");
+            display.display();
+            delay(2000);
+            showResults(pResults);
+        }
     }
     return pass;
 }
 
-void showResults() {
+void showResults(int pResults[4][4]) {
+
     display.clearDisplay();
-    display.setTextSize(2);
-    display.setCursor(0, 0);
-    display.print(openStatus);
-    display.setCursor(0, 18);
-    //display.print(shortStatus);
+    display.setTextSize(1);
+    display.setCursor(22, 0);
+
+    char cable_pins[9];
+    cable_pins[0] = '\0';
+
+    if(cableType == 2){
+        display.print("    T  R  S  /");
+        strcat(cable_pins, " T R S /");
+    }
+    if(cableType == 3){
+        display.print("    2  3  1  /");
+        strcat(cable_pins, " 2 3 1 /");
+    }
+    if(cableType == 4 || cableType == 5){
+        display.print("   +1 -1 +2 -2");
+        strcat(cable_pins, "+1-1+2-2");
+    }
+    /*if(cableType == 5){
+        display.print(" +1 -1  /  /");
+        strcat(cable_pins, "+1-1 / /");
+    }*/
+
+    display.setCursor(22, 3);
+    display.print("  ____________");
+
+    for(int i = 0; i < 4; i++){
+        display.setCursor(22, (i*12)+12);
+        display.print(cable_pins[i*2]);
+        display.print(cable_pins[i*2+1]);
+        //display.print("│ ");
+        display.print("| ");
+        for(int j = 0; j < 4; j++){
+            if(pResults[i][j] == 0){
+                display.print("X");
+            }else{
+                display.print("O");
+            }
+            display.print("  ");
+        }
+    }
+
     display.display();
-    delay(5000);
-/**
-    display.clearDisplay();
-    display.display();
-    delay(100);**/
+
+    while(digitalRead(START_BUTTON)){
+        delay(20);
+    }
+    delay(200);
 }
