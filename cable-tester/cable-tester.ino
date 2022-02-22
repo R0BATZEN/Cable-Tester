@@ -56,7 +56,7 @@ const int NL4[4][4] = { {0, 1, 1, 1},
 char XLR_pins[3][2] = { "3", "2", "1" };
 char MONO_pins[3][2] = { "T", "R" "S" };
 char NL2_pins[2][3] = { "+1", "-1" };
-char NL4_pins[4][3] = { "+1", "-1", "+2", "-2" };
+char NL4_pins[4][3] = { "1+", "1-", "2+", "2-" };
 
 int operatingMode; // 0 = wiggle, 1 = normal
 int cableType;    // 3 = XLR/Stereo, 2 = Mono, 4 = NL4, 5 = NL2
@@ -353,8 +353,8 @@ void showResults(int pResults[4][4]) {
         strcat(cable_pins, " 2 3 1 /");
     }
     if(cableType == 4 || cableType == 5){
-        display.print("   +1 -1 +2 -2");
-        strcat(cable_pins, "+1-1+2-2");
+        display.print("   1+ 1- 2+ 2-");
+        strcat(cable_pins, "1+1-2+2-");
     }
     /*if(cableType == 5){
         display.print(" +1 -1  /  /");
