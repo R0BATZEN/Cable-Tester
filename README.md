@@ -4,7 +4,7 @@ Inspired by [brodafins](https://www.youtube.com/channel/UCYWdkH3cT7uKhssbFg7uHtw
 If you would like to check out the original project you should watch his [youtube video](https://www.youtube.com/watch?v=r3Qzw2hiL2Y) and see how he built his unit.
 His code can be found in the `brodafin` folder of this repository.
 
-![front](cable-tester/images/front.png)
+![front](cable-tester/images/Front.png)
 
 Besides XLR and 1/4" cables I also use SpeakOn (PA speaker) Cables.
 So I added the option to also test those cables (NL2 and NL4 only, I don't use NL8).
