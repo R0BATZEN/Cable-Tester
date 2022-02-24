@@ -4,7 +4,7 @@ Inspired by [brodafins](https://www.youtube.com/channel/UCYWdkH3cT7uKhssbFg7uHtw
 If you would like to check out the original project you should watch his [youtube video](https://www.youtube.com/watch?v=r3Qzw2hiL2Y) and see how he built his unit.
 His code can be found in the `brodafin` folder of this repository.
 
-|<img src="cable-tester/images/Front.png">|<img src="cable-tester/images/Input.png">|<img src="cable-tester/images/Output.png">|
+|<img src="cable-tester/images/front.png">|<img src="cable-tester/images/input.png">|<img src="cable-tester/images/output.png">|
 |-|-|-|
 |Front view|Input Side|Output Side|
 
