@@ -339,7 +339,7 @@ void showResults(int pResults[4][4]) {
 
     display.clearDisplay();
     display.setTextSize(1);
-    display.setCursor(22, 0);
+    display.setCursor(18, 3);
 
     char cable_pins[9];
     cable_pins[0] = '\0';
@@ -361,11 +361,11 @@ void showResults(int pResults[4][4]) {
         strcat(cable_pins, "+1-1 / /");
     }*/
 
-    display.setCursor(22, 3);
+    display.setCursor(18, 6);
     display.print("  ____________");
 
     for(int i = 0; i < 4; i++){
-        display.setCursor(22, (i*12)+12);
+        display.setCursor(18, (i*12)+18);
         display.print(cable_pins[i*2]);
         display.print(cable_pins[i*2+1]);
         //display.print("│ ");
