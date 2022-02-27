@@ -32,9 +32,9 @@ And how they are connected to each other in this tester:
 
 | |T|R|S|/|
 |-|-|-|-|-|
-|T|X|X|O|O|
-|R|X|X|O|O|
-|S|O|O|X|O|
+|T|X|O|O|O|
+|R|O|X|X|O|
+|S|O|X|X|O|
 |/|O|O|O|O|
 
 ## SpeakOn (NL2)
