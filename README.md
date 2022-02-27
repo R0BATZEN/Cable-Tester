@@ -40,4 +40,4 @@ If you would like to use different pins for each in/output, the corresponding va
 
 - The rows correspond to each pin on the output and the columns mark the inputs on the other side of the device.
 `X` denotes a connection between the two pins and `O` means no connection.
-- Take a look at my [cheat sheet](cable-tester/cheat sheets/cheat_sheet.md) to see how each cable is expected to be wired up.
+- Take a look at my [cheat sheet](cable-tester/cheat_sheets/cheat_sheet.md) to see how each cable is expected to be wired up.
