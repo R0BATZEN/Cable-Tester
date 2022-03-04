@@ -29,14 +29,19 @@ const int START_BUTTON = 2;
 const int WIGGLE_SWITCH = 11;
 const int NORMAL_SWITCH = 12;
 
-const int MONO_SWITCH = A0;
+const int MONO_SWITCH = A1;
 const int NL2_SWITCH = A2;
-const int NL4_SWITCH = A1;
+const int STEREO_SWITCH = A0;
 
 const int XLR[4][4] = { {0, 1, 1, 1},
                         {1, 0, 1, 1},
                         {1, 1, 0, 1} ,
                         {1, 1, 1, 1 } };
+
+const int STEREO[4][4] = { {0, 1, 1, 1},
+                           {1, 0, 1, 1},
+                           {1, 1, 0, 1},
+                           {1, 1, 1, 1} };
 
 const int MONO[4][4] = { {0, 1, 1, 1},
                          {1, 0, 0, 1},
@@ -59,9 +64,9 @@ char NL2_pins[2][3] = { "+1", "-1" };
 char NL4_pins[4][3] = { "1+", "1-", "2+", "2-" };
 
 int operatingMode; // 0 = wiggle, 1 = normal
-int cableType;    // 3 = XLR/Stereo, 2 = Mono, 4 = NL4, 5 = NL2
+int cableType;    // 3 = XLR, 2 = TS , 4 = TRS, 5 = NL2
 
-int inputs[] = { IN1, IN2, IN3, IN4, WIGGLE_SWITCH, NORMAL_SWITCH, MONO_SWITCH, NL4_SWITCH, NL2_SWITCH, START_BUTTON};
+int inputs[] = { IN1, IN2, IN3, IN4, WIGGLE_SWITCH, NORMAL_SWITCH, MONO_SWITCH, STEREO_SWITCH, NL2_SWITCH, START_BUTTON};
 int outputs[] = {OUT1, OUT2, OUT3, OUT4};
 
 int pass = 1;
@@ -95,9 +100,9 @@ int getCableType() {
 
     int cable;
 
-    if (!digitalRead(MONO_SWITCH)) { //Mono
+    if (!digitalRead(MONO_SWITCH)) { //TS
         cable = 2;
-    } else if (!digitalRead(NL4_SWITCH)) { //NL4
+    } else if (!digitalRead(STEREO_SWITCH)) { //TRS
         cable = 4;
     } else if (!digitalRead(NL2_SWITCH)){ //NL2
         cable = 5;
@@ -149,27 +154,28 @@ void loop() {
     //Serial.println(cableType);
 
     display.clearDisplay();
-    display.setTextSize(3);
+    display.setTextSize(4);
 
     if (cableType == 2) {
-        display.setCursor(28, 10);
-        display.println("Mono");
+        display.setCursor(40, 8);
+        display.println("TS");
         display.setTextSize(2);
-        display.setCursor(27, 47);
-        display.println("Klinke");
+        display.setCursor(5, 47);
+        display.println("Unbalanced");
     } else if ( cableType == 3) {
-        display.setCursor(11, 10);
-        display.println("Stereo");
+        display.setCursor(30, 8);
+        display.println("XLR");
         display.setTextSize(2);
-        display.setCursor(4, 47);
-        display.println("XLR/Klinke");
+        display.setCursor(18, 47);
+        display.println("Balanced");
     } else if (cableType == 4) {
-        display.setCursor(1, 10);
-        display.println("SpeakOn");
+        display.setCursor(30, 8);
+        display.println("TRS");
         display.setTextSize(2);
-        display.setCursor(45, 47);
-        display.println("NL4");
+        display.setCursor(18, 47);
+        display.println("Balanced");
     } else if (cableType == 5) {
+        display.setTextSize(3);
         display.setCursor(1, 10);
         display.println("SpeakOn");
         display.setTextSize(2);
@@ -275,7 +281,7 @@ int testWiggle() {
 int checkResults(int pResults[4][4], int print) {
     pass = 1;
 
-    if (cableType == 2) { // Mono Cable
+    if (cableType == 2) { // TS Cable (unbalanced)
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (pResults[i][j] != MONO[i][j]) {
@@ -284,7 +290,7 @@ int checkResults(int pResults[4][4], int print) {
             }
         }
 
-    } else  if (cableType == 3) { // XLR/Stereo Cable
+    } else  if (cableType == 3) { // XLR Cable (balanced)
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (pResults[i][j] != XLR[i][j]) {
@@ -296,10 +302,10 @@ int checkResults(int pResults[4][4], int print) {
             for (int j = 0; j < 4; j++) {
             }
         }
-    } else  if (cableType == 4) { // SpeakOn NL4 Cable
+    } else  if (cableType == 4) { // TRS Cable (balanced)
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                if (pResults[i][j] != NL4[i][j]) {
+                if (pResults[i][j] != STEREO[i][j]) {
                     pass = 0;
                 }
             }
@@ -344,7 +350,7 @@ void showResults(int pResults[4][4]) {
     char cable_pins[9];
     cable_pins[0] = '\0';
 
-    if(cableType == 2){
+    if(cableType == 2 || cableType == 4){
         display.print("    T  R  S  /");
         strcat(cable_pins, " T R S /");
     }
@@ -352,14 +358,10 @@ void showResults(int pResults[4][4]) {
         display.print("    2  3  1  /");
         strcat(cable_pins, " 2 3 1 /");
     }
-    if(cableType == 4 || cableType == 5){
+    if(cableType == 5){
         display.print("   1+ 1- 2+ 2-");
         strcat(cable_pins, "1+1-2+2-");
     }
-    /*if(cableType == 5){
-        display.print(" +1 -1  /  /");
-        strcat(cable_pins, "+1-1 / /");
-    }*/
 
     display.setCursor(18, 6);
     display.print("  ____________");
