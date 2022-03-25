@@ -19,7 +19,7 @@ And how they are connected to each other in this tester:
 |1|O|O|X|O|
 |/|O|O|O|O|
 
-## 1/4" TRS (Stereo)
+## 1/4" TRS (Stereo / Balanced)
 
 | |T|R|S|/|
 |-|-|-|-|-|
@@ -28,7 +28,7 @@ And how they are connected to each other in this tester:
 |S|O|O|X|O|
 |/|O|O|O|O|
 
-## 1/4" TS (Mono)
+## 1/4" TS (Mono / Unbalanced)
 
 | |T|R|S|/|
 |-|-|-|-|-|
