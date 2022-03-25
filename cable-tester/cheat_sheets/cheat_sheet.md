@@ -10,7 +10,7 @@ And how they are connected to each other in this tester:
 
 # Expected test results
 
-## XLR (Stereo)
+## XLR (Balanced)
 
 | |2|3|1|/|
 |-|-|-|-|-|
