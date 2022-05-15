@@ -17,12 +17,12 @@ So I added the option to also test those cables (NL2 and NL4 only, I don't use N
 Take a look at the [fritzing file](cable-tester/schematics/schematics.fzz) if you need more details.
 
 ## 3D Printed Case
-Feel free to download and print my case. Just make sure that your inputs / buttons match mine so that the holes will fitt.
+Feel free to download and print my case. Just make sure that your inputs / buttons match mine so that the holes will fit.
 In case you want to modify it before printing, I have included my source files.
 
 ## Installing the Code
 You should be able to just download my source code and flash it to your Arduino (Nano).
-If you would like to use different pins for each in/output, the corresponding variables are all at the top if the file.
+If you would like to use different pins for each in/output, the corresponding variables are all at the top of the file.
 
 ## Using the Tester
 - First decide which mode (wiggle or normal) you would like to use. Flip the switch accordingly and wait ~2 seconds for everything to start up.
