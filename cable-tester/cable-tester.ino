@@ -59,7 +59,7 @@ const int NL4[4][4] = { {0, 1, 1, 1},
                         {1, 1, 1, 0} };
 
 char XLR_pins[3][2] = { "3", "2", "1" };
-char MONO_pins[3][2] = { "T", "R" "S" };
+char MONO_pins[3][2] = { "T", "R", "S" };
 char NL2_pins[2][3] = { "+1", "-1" };
 char NL4_pins[4][3] = { "1+", "1-", "2+", "2-" };
 
